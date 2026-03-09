@@ -24,6 +24,9 @@ export class TaskFormComponent implements OnInit {
   }>();
   @Output() cancel = new EventEmitter<void>();
 
+  readonly TITLE_MAX = 50;
+  readonly DESC_MAX = 200;
+
   title = '';
   description = '';
   completed = false;
@@ -38,6 +41,14 @@ export class TaskFormComponent implements OnInit {
   get completionInterval(): number | null {
     const parsed = parseInt(this.completionIntervalRaw, 10);
     return !isNaN(parsed) && parsed > 0 ? parsed : null;
+  }
+
+  get isValid(): boolean {
+    return (
+      this.title.trim().length > 0 &&
+      this.title.length <= this.TITLE_MAX &&
+      this.description.length <= this.DESC_MAX
+    );
   }
 
   ngOnInit(): void {
@@ -55,7 +66,7 @@ export class TaskFormComponent implements OnInit {
   }
 
   onSave(): void {
-    if (!this.title.trim()) return;
+    if (!this.isValid) return;
     this.save.emit({
       title: this.title.trim(),
       description: this.description.trim(),
