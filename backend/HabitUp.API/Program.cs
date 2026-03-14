@@ -1,3 +1,52 @@
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
+using HabitUp.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add controllers
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IToDoService, ToDoService>();
+
+// Add DynamoDB
+builder.Services.AddSingleton<IAmazonDynamoDB>(sp =>
+{
+    var config = builder.Configuration.GetSection("AWS");
+    return new AmazonDynamoDBClient(
+        config["AccessKey"],
+        config["SecretKey"],
+        new AmazonDynamoDBConfig { RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(config["Region"]) }
+    );
+});
+builder.Services.AddSingleton<IDynamoDBContext, DynamoDBContext>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+var app = builder.Build();
+app.UseCors("AllowAngularApp");
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.MapControllers();
+app.Run();
+
+/*
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
@@ -123,3 +172,4 @@ record CreateTaskRequest(
     int TimesCompleted,
     int? CompletionInterval
 );
+*/
