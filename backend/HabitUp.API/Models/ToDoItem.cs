@@ -1,31 +1,23 @@
-﻿using Amazon.DynamoDBv2.DataModel;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace HabitUp.Models;
 
-[DynamoDBTable("ToDo")]
 public class ToDoItem
 {
-    [DynamoDBHashKey("Id")] 
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    [Key]
+    public int Id { get; set; }
 
-    
-    [DynamoDBProperty]
+    public string Title { get; set; } = string.Empty;
+
     public string Description { get; set; } = string.Empty;
 
-    [DynamoDBProperty]
-    public DateTime? DueDate { get; set; }
+    public bool Completed { get; set; }
 
-    
-    [DynamoDBProperty]
-    public string Category { get; set; } = string.Empty;
-    
-    
-    [DynamoDBProperty]
-    public string Status { get; set; } = string.Empty;
+    public int DateStarted { get; set; }
 
-    [DynamoDBProperty] 
-    public string Priority { get; set; } = "";
+    public int? DateCompleted { get; set; }
 
-    [DynamoDBIgnore]
-    public bool OverDue => Status == "open" && DueDate < DateTime.Today;
+    public int TimesCompleted { get; set; }
+
+    public int? CompletionInterval { get; set; }
 }

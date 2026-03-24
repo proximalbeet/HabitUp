@@ -1,6 +1,6 @@
-using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DataModel;
+using HabitUp.Data;
 using HabitUp.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,30 +11,11 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IToDoService, ToDoService>();
 
-// Add DynamoDB
-builder.Services.AddSingleton<IAmazonDynamoDB>(sp =>
-{
-    var config = builder.Configuration.GetSection("AWS");
-    return new AmazonDynamoDBClient(
-        config["AccessKey"],
-        config["SecretKey"],
-        new AmazonDynamoDBConfig { RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(config["Region"]) }
-    );
-});
-builder.Services.AddSingleton<IDynamoDBContext, DynamoDBContext>();
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAngularApp", policy =>
-    {
-        policy.WithOrigins("http://localhost:4200")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
+// Add MySQL via EF Core
+builder.Services.AddDbContext<HabitUpDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
-app.UseCors("AllowAngularApp");
 
 if (app.Environment.IsDevelopment())
 {
@@ -43,7 +24,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.MapControllers();
+app.MapFallbackToFile("index.html");
 app.Run();
 
 /*
